@@ -442,3 +442,223 @@ db.students.find({
   name: { $regex: /n$/i }
 });
 
+// =======================================================
+//   COMPLETE MONGODB ASSIGNMENT – ONE SINGLE FILE
+// =======================================================
+
+// -------------------------------------------------------
+// PART 1: BOOKS TASKS
+// -------------------------------------------------------
+
+// 1. Count Books by a Specific Author (George Orwell)
+db.books.countDocuments({ author: "George Orwell" });
+
+// 2. Find Books Published After 2000
+db.books.find({ publication_year: { $gt: 2000 } });
+
+// 3. Update the Genre of “The Catcher in the Rye”
+db.books.updateOne(
+  { title: "The Catcher in the Rye" },
+  { $set: { genre: "Classic Fiction" } }
+);
+
+// 4. Increase Rating of All Books by 0.5
+db.books.updateMany({}, { $inc: { rating: 0.5 } });
+
+// 5. Text Search "Great"
+db.books.createIndex({ title: "text", author: "text" });
+db.books.find({ $text: { $search: "Great" } });
+
+// 6. Sort Books by Publication Year (Descending)
+db.books.find().sort({ publication_year: -1 });
+
+// 7. Get Average Publication Year by Genre
+db.books.aggregate([
+  { $group: { _id: "$genre", avgYear: { $avg: "$publication_year" } } }
+]);
+
+// 8. Add Field "available" to All Books (true)
+db.books.updateMany({}, { $set: { available: true } });
+
+// 9. Delete Books Published Before 1950
+db.books.deleteMany({ publication_year: { $lt: 1950 } });
+
+// 10. List All Unique Genres
+db.books.distinct("genre");
+
+
+// -------------------------------------------------------
+// PART 2: SchoolDB – STUDENTS + COURSES
+// -------------------------------------------------------
+
+// 1. Create DB
+use SchoolDB;
+
+// 2. Create Collections
+db.createCollection("Students");
+db.createCollection("Courses");
+
+// 3. Insert Students
+db.Students.insertMany([
+  { studentId: 1, name: "Alice", age: 21, math: 88, science: 92 },
+  { studentId: 2, name: "Bob", age: 22, math: 75, science: 85 },
+  { studentId: 3, name: "Charlie", age: 23, math: 90, science: 78 },
+  { studentId: 4, name: "Daisy", age: 20, math: 80, science: 70 }
+]);
+
+// 4. Insert Courses
+db.Courses.insertMany([
+  {
+    courseId: 101,
+    name: "Math 101",
+    instructor: "Dr. Adams",
+    studentsEnrolled: [1, 2, 3]
+  },
+  {
+    courseId: 102,
+    name: "Science 101",
+    instructor: "Dr. Smith",
+    studentsEnrolled: [2, 4]
+  }
+]);
+
+// 5. findOne Queries
+
+// Student with math >= 85 and age < 22
+db.Students.findOne({ math: { $gte: 85 }, age: { $lt: 22 } });
+
+// Course where studentsEnrolled includes 3 and instructor is Dr. Adams
+db.Courses.findOne({
+  studentsEnrolled: 3,
+  instructor: "Dr. Adams"
+});
+
+// 6. find Queries
+
+// Students: math >= 80 AND science < 90
+db.Students.find({ math: { $gte: 80 }, science: { $lt: 90 } });
+
+// Students age < 23 OR math >= 85
+db.Students.find({ $or: [{ age: { $lt: 23 } }, { math: { $gte: 85 } }] });
+
+// science >= 80 AND (math < 75 OR age > 22)
+db.Students.find({
+  science: { $gte: 80 },
+  $or: [{ math: { $lt: 75 } }, { age: { $gt: 22 } }]
+});
+
+// 7. updateOne
+
+// Increase Bob’s science score where math >= 75
+db.Students.updateOne(
+  { name: "Bob", math: { $gte: 75 } },
+  { $inc: { science: 5 } }
+);
+
+// 8. updateMany
+
+// math +5 for students with science < 80 AND age > 22
+db.Students.updateMany(
+  { science: { $lt: 80 }, age: { $gt: 22 } },
+  { $inc: { math: 5 } }
+);
+
+// 9. deleteOne
+
+// Delete Daisy where science < 80
+db.Students.deleteOne({ name: "Daisy", science: { $lt: 80 } });
+
+// 10. deleteMany
+
+// Remove courses where student 2 enrolled OR instructor is Dr. Smith
+db.Courses.deleteMany({
+  $or: [{ studentsEnrolled: 2 }, { instructor: "Dr. Smith" }]
+});
+
+// 11. Drop Students
+db.Students.drop();
+
+// 12. Drop Courses
+db.Courses.drop();
+
+// 13. Delete DATABASE
+db.dropDatabase();
+
+
+// -------------------------------------------------------
+// PART 3: PAGE 17–23 EXTRA DEMO COMMANDS
+// (Teacher ke examples SAME format me include)
+// -------------------------------------------------------
+
+// Count All Documents
+db.books.countDocuments();
+
+// Count books after 2000
+db.books.countDocuments({ publication_year: { $gt: 2000 } });
+
+// Sort Ascending
+db.books.find().sort({ publication_year: 1 });
+
+// Sort Desc publication_year + asc title
+db.books.find().sort({ publication_year: -1, title: 1 });
+
+// Limit
+db.books.find().limit(5);
+
+// Skip
+db.books.find().skip(3);
+
+// Pagination
+db.books.find().skip(5).limit(5);
+
+// Aggregation: Average publication year
+db.books.aggregate([
+  { $group: { _id: null, avgPublicationYear: { $avg: "$publication_year" } } }
+]);
+
+// Count books per genre
+db.books.aggregate([
+  { $group: { _id: "$genre", count: { $sum: 1 } } }
+]);
+
+// Sort genres by count
+db.books.aggregate([
+  { $group: { _id: "$genre", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+]);
+
+// Projection: only title + author
+db.books.find({}, { title: 1, author: 1, _id: 0 });
+
+// Exclude ISBN
+db.books.find({}, { ISBN: 0 });
+
+// Text search
+db.books.createIndex({ title: "text", author: "text" });
+db.books.find({ $text: { $search: "Road" } });
+
+// Regex — title starts with "The"
+db.books.find({ title: { $regex: "^The", $options: "i" } });
+
+// Regex — author ends with Lee
+db.books.find({ author: { $regex: "Lee$", $options: "i" } });
+
+// Increase rating of all books
+db.books.updateMany({}, { $inc: { rating: 1 } });
+
+// Decrease publication year of "1984"
+db.books.updateOne(
+  { title: "1984" },
+  { $inc: { publication_year: -5 } }
+);
+
+// findOneAndUpdate
+db.books.findOneAndUpdate(
+  { title: "The Great Gatsby" },
+  { $set: { genre: "Classic" } },
+  { returnNewDocument: true }
+);
+
+// findOneAndDelete
+db.books.findOneAndDelete({ title: "The Catcher in the Rye" });
+
