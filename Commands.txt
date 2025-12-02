@@ -1,0 +1,208 @@
+commands for telnet on switch
+-------------------------------
+1. en
+2. conf t
+3. hostname s1
+4. enable secret yourpass e.g pass
+5. interface vlan 1
+6. ip add give_ip_to_tellnet 255.255.255.0
+7. no shut
+8. ex
+then
+1. line vty 0 4
+2. password yourpass e.g pass1
+3. login
+4. ex
+
+-------------------------------
+commands for telnet on router
+-------------------------------
+
+1. en
+2. conf t
+3. hostname r1
+4. enable secret pass
+5. int f0/0 or any interface connected with switch verify first
+6. ip add give_ip_to_router 255.255.255.0
+7. no shut
+then
+8. line vty 0 4
+9. login
+10. password pass1
+11. end
+12. wr
+
+----------------------
+SSH configuration
+---------------------
+1. Hostname set karo
+hostname myrouter
+
+2. Domain name set karo (SSH ke liye required)
+ip domain-name pakistan
+
+3. SSH user bana lo
+username fareed password fareed
+
+4. RSA keys generate karo
+crypto key generate rsa
+modulus 1024
+
+5. SSH version 2 enable
+ip ssh version 2
+
+6. VTY lines configure
+line vty 0 15
+password 1122
+login local
+transport input ssh
+
+7. Enable mode password
+enable password 1122
+ex
+-----------------------
+SSH ACCESS COMMAND
+-----------------------
+PC ya laptop se:
+1. ssh -l fareed 192.168.1.2
+Password:fareed
+-------------------------------->
+
+------------------------------------------------------
+AGAR SWITCH PAR USE KAR RHE HO to IP dena zaroori
+------------------------------------------------------
+1. interface vlan 1
+2. ip address 192.168.1.2 255.255.255.0
+3. no shutdown
+4. ip default-gateway 192.168.1.1  optional in some cases
+------->
+
+------------------------------
+ACL standard configuration
+-----------------------------
+1. connect the pcs and router with static, dynamic, rip, ospf any you wish
+2. then create access-list on nearest router
+ 2.1: en
+ 2.2: conf t
+ 2.3: access-list 10 deny host ip_to_be_blocked
+ it will deny all by default so permit others
+ 2.4: access-list permit any
+here we just created the ACL access-list now apply this
+3. choose int inbound or outbound i choose int f0/0
+ 3.1: ip access-group 10 in or out choose accordingly
+
+
+---------------------------------
+Static NAT
+--------------------------------
+1. configure the ips for router and pcs and then connect them by static or rip
+2. ip nat inside source static pc_ip public_ip  ---> run this seperatley for each host
+3. choose interfaces and tell they are inside or outside
+  int f0/0
+  ip nat inside
+  int s2/0
+  ip nat outside
+show ip nat translations
+
+
+--------------------------------
+Dynamic NAT
+-------------------------------
+1. en
+2. conf t
+3. access-list 1 permit whole_netwokIP wildcardMask--> 192.168.10.0 0.0.0.255 
+4. ip nat pool pool_name public_ips x- to- y netmask_of_ips --> 10.0.0.10 10.0.0.15 netmask 255.0.0.0
+5. ip nat inside source list 1 pool pool_name
+6. int f0/0
+7. ip nat inside
+ex
+8. int s2/0
+9. ip nat outside
+ex
+
+
+----------------------------------
+PAT configuration
+----------------------------------------
+
+1. en
+2. conf t
+3. access-list 1 permit 192.168.10.0 0.0.0.255 same we did in dynamic nat
+4. ip nat pool_name 10.0.0.5 10.0.0.5 netmask 255.0.0.0
+5. ip nat inside source list 1 pool pool_name overload
+6. int f0/0 
+7. ip nat inside
+8. int s2/0
+9. ip nat outside
+
+
+____________________________________________
+Static Routing configurations
+____________________________________________
+
+1. ip route destination_network subnet_mask next_hop_ip
+
+
+
+
+________________________________________________
+RiP Configutation
+________________________________________________
+
+
+1. en
+2. conf t
+3. router rip
+4. network network_ip_of_connected_network      -------> do for every network seperately
+5. version 2
+
+
+___________________________________________
+OSPF configuration
+___________________________________________
+
+1. en
+2. conf t
+3. router ospf 1
+netwok network_ip_of_connected_network wilcard_mask area 0
+4. network 192.168.10.0 0.0.0.255 area 0
+5. show ip route ---------> to see the routing table
+6. show ip ospf neighbor       ______/neighbor table
+
+
+________________________________________________
+BGP configurations
+________________________________________________
+
+1. en
+2. conf t
+3. router bgp 1
+4. neighbor neighbor_ip remote-as 71
+5. network directly_connected_network_ip mask 255.255.255.0
+6. ex
+7. do write
+
+vlan configuration
+
+1. en 
+2. show vlan brief 
+3. show brief
+4. vlan 10
+5. name Ai
+6. vlan 20
+7. name cs
+int f0/0
+8. switchport mode access
+9. switchport access vlan 10
+int f0/4
+- switchport mode access
+- switchport access vlan 10
+now they both port are went to the vlan 10 
+int f0/5
+10. switchport mode trunk
+int f0/0.10
+11. encapsulation dot1q 10
+12. ip add 192.168.1.1 255.255.255.0
+13. int f0/0.20
+encapuslation dot1q 10
+
