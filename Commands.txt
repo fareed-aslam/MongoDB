@@ -206,3 +206,18 @@ int f0/0.10
 13. int f0/0.20
 encapuslation dot1q 10
 
+
+dhcp on router
+
+ip dhcp excluded-address 192.168.1.1
+ip dhcp excluded-address 192.168.2.1
+ip dhcp pool 192.168.1.1
+network 192.168.1.0 255.255.255.0
+default-router 192.168.1.1
+dns-server 8.8.8.8
+ex
+dhcp pool 192.168.2.1
+network 192.168.2.0 255.255.255.0
+default-router 192.168.2.1 
+dns-server 8.8.8.8
+
